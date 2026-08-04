@@ -37,23 +37,6 @@
   };
 
   inputs = {
-    "actions-nix" = {
-      flake = true;
-      type = "github";
-      owner = "nialov";
-      repo = "actions.nix";
-
-      inputs = {
-        "nixpkgs" = {
-          follows = "nixpkgs";
-        };
-
-        "flake-parts" = {
-          follows = "flake-parts";
-        };
-      };
-    };
-
     "cachix" = {
       flake = true;
       type = "github";
@@ -145,7 +128,6 @@
       imports = [
         inputs."treefmt-nix".flakeModule
         inputs."devenv".flakeModule
-        inputs."actions-nix".flakeModules."default"
       ];
 
       perSystem = {
@@ -299,7 +281,7 @@
               enterTest = ''
                 ${lib.getExe config.packages."testRun"}
               '';
-              
+
               languages = {
                 rust = {
                   enable = true;
