@@ -1,0 +1,133 @@
+---
+on:
+  merge_group:
+  
+  pull_request:
+    branches: [ "*" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  BIN_NAME: amoret
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: lingint
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkput
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: install nix
+        uses: cachix/install-nix-action@3715ab1a11cac9e991980d7b7a428d8dd745496d
+        with:
+          extra_nix_config: |
+            extra-experimental-features = nix-command flakes
+
+      - name: linter run
+        shell: bash
+        run: |
+          nix --extra-experimental-features "nix-command flakes" \
+            develop .#default --no-pure-eval \
+            --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
+            --command prek run --fail-fast --all-file 
+
+  matrix-test-build-run:
+    name: fail-slow (${{ matrix.target }})
+    needs: lint 
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            use_cross: true
+          
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            use_cross: true
+          
+          - os: ubuntu-latest
+            target: riscv64gc-unknown-linux-musl
+            use_cross: true
+          
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            use_cross: false
+
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            use_cross: false
+          
+          - os: macos-13
+            target: x86_64-apple-darwin
+            use_cross: false
+
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            use_cross: false
+
+    steps:
+      - name: checkput
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@b2b36207fb4d11c9373a6e7c38b6f5f2e4ea0f9e
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: win-llvm
+        if: runner.os == 'Windows'
+        uses: rlalik/setup-lld@8a3a06a55853b7b8eb498ba5d743b9563eb8b77b
+        
+      - name: cross-rs
+        if: matrix.use_cross == true
+        run: cargo install cross --git https://github.com/cross-rs/cross --verbose
+
+      - name: cargo-nextest
+        run: cargo install cargo-nextest --git https://github.com/nextest-rs/nextest --verbose
+
+      - name: testing
+        shell: bash
+        run: |
+          if [ "${{ matrix.use_cross }}" = "true" ]; then
+            cross test --release --locked --target ${{ matrix.target }} --fail-fast
+          else
+            cargo nextest run --release --locked --target ${{ matrix.target }} --fail-fast
+          fi
+
+      - name: building
+        shell: bash
+        run: |
+          if [ "${{ matrix.use_cross }}" = "true" ]; then
+            cross build --release --locked --target ${{ matrix.target }}
+          else
+            cargo build --release --locked --target ${{ matrix.target }}
+          fi
+
+      - name: runnig
+        if: matrix.target != 'aarch64-pc-windows-msvc'
+        shell: bash
+        run: |
+          if [ "${{ matrix.use_cross }}" = "true" ]; then
+            timeout 5 cross run --release --locked --target ${{ matrix.target }} -- --config ./config.toml -vvv
+          else
+            timeout 5 cargo run --release --locked --target ${{ matrix.target }} -- --config ./config.toml -vvv
+          fi
+          
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -eq 124 ]; then
+            echo "✅ amoret succseeded"
+            exit 0
+          else
+            echo "❌ amoret failed $EXIT_CODE"
+            exit $EXIT_CODE
+          fi
+---
