@@ -3,16 +3,20 @@ name = "amoret"
 version = "0.1.0"
 edition = "2021"
 
-[target.x86_64-unknown-linux-gnu]
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[target.x86_64-unknown-linux-musl]
 linker = "clang"
 
-[target.aarch64-unknown-linux-gnu]
+[target.aarch64-unknown-linux-musl]
 linker = "clang"
 
-[target.x86_64-apple-darwin]
-linker = "clang"
-
-[target.aarch64-apple-darwin]
+[target.riscv64gc-unknown-linux-musl]
 linker = "clang"
 
 [target.x86_64-pc-windows-msvc]
@@ -20,6 +24,12 @@ linker = "lld-link"
 
 [target.aarch64-pc-windows-msvc]
 linker = "lld-link"
+
+[target.x86_64-apple-darwin]
+linker = "clang"
+
+[target.aarch64-apple-darwin]
+linker = "clang"
 
 [dependencies]
 discord-rich-presence = "1.1.0"
@@ -32,6 +42,7 @@ log = "0.4"
 
 tokio = {
   version = "1",
+  default-features = false,
   features = [
     "sync",
     "time",
@@ -42,11 +53,20 @@ tokio = {
 
 serde = {
   version = "1",
-  features = [ "derive" ]
+  default-features = false,
+  features = [
+    "derive",
+    "std"
+  ]
 }
 
 clap = {
   version = "4",
-  features = [ "derive" ]
+  default-features = false,
+  features = [
+    "derive",
+    "help",
+    "usage",
+    "error-context"
+  ]
 }
-
