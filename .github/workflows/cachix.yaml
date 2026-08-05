@@ -27,10 +27,12 @@ jobs:
         shell: bash
         run: |
           nix --extra-experimental-features "nix-command flakes" \
-            eval .#default.drvPath --no-pure-eval
+            eval .#default.drvPath --no-pure-eval \
+            --accept-flake-config
 
       - name: nix build
         shell: bash
         run: |
           nix --extra-experimental-features "nix-command flakes" \
-            build .#default --no-pure-eval 
+            build .#default --no-pure-eval \
+            --accept-flake-config

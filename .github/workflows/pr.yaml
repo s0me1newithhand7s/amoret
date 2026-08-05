@@ -41,6 +41,7 @@ jobs:
 
           nix --extra-experimental-features "nix-command flakes" \
             develop .#default --no-pure-eval \
+            --accept-flake-config \
             --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
             --command prek run --fail-fast --all-file 
 
