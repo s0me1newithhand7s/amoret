@@ -43,7 +43,7 @@ jobs:
             develop .#default --no-pure-eval \
             --accept-flake-config \
             --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
-            --command prek run --fail-fast --all-file 
+            --command prek run --fail-fast --all-files
 
   matrix-test-build-run:
     name: fail-slow (${{ matrix.target }})

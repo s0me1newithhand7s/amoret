@@ -253,16 +253,7 @@
                 enable = true;
               };
 
-              "markdownlint" = {
-                enable = true;
-                package = pkgs.markdownlint-cli;
-              };
-
               "gitlint" = {
-                enable = true;
-              };
-
-              "rustfmt" = {
                 enable = true;
               };
 
