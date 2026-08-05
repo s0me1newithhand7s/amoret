@@ -1,4 +1,6 @@
 ---
+name: UPDATE JOB
+
 on:
   workflow_dispatch:
   
@@ -15,16 +17,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: rust toolchain
-        uses: dtolnay/rust-toolchain@b2b36207fb4d11c9373a6e7c38b6f5f2e4ea0f9e
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
 
       - name: cargo update
         run: cargo update --verbose
 
       - name: pull requrest
-        uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc838f5cc0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
         with:
           token: ${{ secrets.GHA_TOKEN }}
           commit-message: "chore(deps): update cargo dependencies"
@@ -40,10 +42,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkot
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: nix install
-        uses: cachix/install-nix-action@3715ab1a11cac9e991980d7b7a428d8dd745496d
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
         with:
           extra_nix_config: |
             extra-experimental-features = nix-command flakes
@@ -52,7 +54,7 @@ jobs:
         run: nix flake update --accept-flake-config
 
       - name: pr
-        uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc838f5cc0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
         with:
           token: ${{ secrets.GHA_TOKEN }}
           commit-message: "build(nix): update flake inputs"
@@ -68,19 +70,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: setup deno
-        uses: denoland/setup-deno@4a92d41a774db8cfc7a022dfa022d2fca038c116
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed
         with:
           deno-version: v2.x
           cache: true
 
       - name: update actions 
-        run: deno dx actions-up --write
+        run: deno run --allow-read --allow-net jsr:@hayd/udd .github/workflows/*.yaml
       
       - name: pr
-        uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc838f5cc0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
         with:
           token: ${{ secrets.GHA_TOKEN }}
           commit-message: "ci(actions): bump github actions versions"

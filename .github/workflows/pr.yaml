@@ -1,4 +1,6 @@
 ---
+name: PR JOB
+
 on:
   merge_group:
   
@@ -18,14 +20,14 @@ permissions:
 
 jobs:
   lint:
-    name: lingint
+    name: linting
     runs-on: ubuntu-latest
     steps:
       - name: checkput
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: install nix
-        uses: cachix/install-nix-action@3715ab1a11cac9e991980d7b7a428d8dd745496d
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
         with:
           extra_nix_config: |
             extra-experimental-features = nix-command flakes
@@ -33,10 +35,15 @@ jobs:
       - name: linter run
         shell: bash
         run: |
+          mkdir -p "./.devenv"
+          
+          printf "%s" "$PWD" > "./.devenv/root"
+
           nix --extra-experimental-features "nix-command flakes" \
             develop .#default --no-pure-eval \
+            --accept-flake-config \
             --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
-            --command prek run --fail-fast --all-file 
+            --command prek run --fail-fast --all-files
 
   matrix-test-build-run:
     name: fail-slow (${{ matrix.target }})
@@ -76,17 +83,14 @@ jobs:
 
     steps:
       - name: checkput
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: rust toolchain
-        uses: dtolnay/rust-toolchain@b2b36207fb4d11c9373a6e7c38b6f5f2e4ea0f9e
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
         with:
           targets: ${{ matrix.target }}
+          toolchain: stable
 
-      - name: win-llvm
-        if: runner.os == 'Windows'
-        uses: rlalik/setup-lld@8a3a06a55853b7b8eb498ba5d743b9563eb8b77b
-        
       - name: cross-rs
         if: matrix.use_cross == true
         run: cargo install cross --git https://github.com/cross-rs/cross --verbose
@@ -130,4 +134,19 @@ jobs:
             echo "❌ amoret failed $EXIT_CODE"
             exit $EXIT_CODE
           fi
----
+  
+  all-tests-passed:
+    name: "Required - No Failed Checks"
+    needs: [ lint, matrix-test-build-run ]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check matrix status
+        run: |
+          if [ "${{ needs.matrix-test-build-run.result }}"="success" ]; then
+            echo "All matrix tests passed successfully."
+            exit 0
+          else
+            echo "One or more matrix tests failed."
+            exit 1
+          fi

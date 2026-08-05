@@ -1,0 +1,38 @@
+name: CACHIX JOB
+
+on:
+  push:
+
+jobs:
+  push-to-cache:
+    name: update-binary-cache
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkput
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: install nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
+        with:
+          extra_nix_config: |
+            extra-experimental-features = nix-command flakes
+
+      - name: setup cachix
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71
+        with:
+          name: amoret
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: dry build
+        shell: bash
+        run: |
+          nix --extra-experimental-features "nix-command flakes" \
+            eval .#default.drvPath --no-pure-eval \
+            --accept-flake-config
+
+      - name: nix build
+        shell: bash
+        run: |
+          nix --extra-experimental-features "nix-command flakes" \
+            build .#default --no-pure-eval \
+            --accept-flake-config
