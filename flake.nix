@@ -202,14 +202,6 @@
                 "*.md"
               ];
             };
-
-            "rustfmt" = {
-              enable = true;
-              priority = 2;
-              includes = [
-                ".rs"
-              ];
-            };
           };
 
           settings = {
@@ -259,6 +251,7 @@
 
               "clippy" = {
                 enable = true;
+                fail_fast = true;
               };
             };
           };
