@@ -2,6 +2,8 @@
 name: RELEASE JOB
 
 on:
+  workflow_dispatch:
+
   push:
     branches: [ "release" ]
 
@@ -111,7 +113,7 @@ jobs:
       - name: car go version
         uses: cssnr/toml-action@fde2b2f22f30923c248d1bddc1e431437d6e314f
         with:
-          file: Cargo.toml
+          file: ./Cargo.toml
           path: package.version
 
       - name: gha release

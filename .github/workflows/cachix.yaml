@@ -1,6 +1,8 @@
 name: CACHIX JOB
 
 on:
+  workflow_dispatch:
+
   push:
 
 jobs:
