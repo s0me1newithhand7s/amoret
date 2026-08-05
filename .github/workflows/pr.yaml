@@ -35,6 +35,10 @@ jobs:
       - name: linter run
         shell: bash
         run: |
+          mkdir -p "./.devenv"
+          
+          printf "%s" "$PWD" > "./.devenv/root"
+
           nix --extra-experimental-features "nix-command flakes" \
             develop .#default --no-pure-eval \
             --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
