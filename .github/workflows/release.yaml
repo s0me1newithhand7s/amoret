@@ -86,7 +86,7 @@ jobs:
           else
             cp target/${{ matrix.target }}/release/${{ env.BIN_NAME }} staging/
           fi
-          tar --zstd -czvf ${{ env.BIN_NAME }}-${{ matrix.target }}.tar.zstd -C staging .
+          tar -caf ${{ env.BIN_NAME }}-${{ matrix.target }}.tar.zstd -C staging .
 
       - name: attest build
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373
