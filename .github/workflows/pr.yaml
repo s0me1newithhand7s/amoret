@@ -47,7 +47,6 @@ jobs:
 
   matrix-test-build-run:
     name: fail-slow (${{ matrix.target }})
-    needs: lint 
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
