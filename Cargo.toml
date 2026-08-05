@@ -10,27 +10,6 @@ codegen-units = 1
 panic = "abort"
 strip = true
 
-[target.x86_64-unknown-linux-musl]
-linker = "clang"
-
-[target.aarch64-unknown-linux-musl]
-linker = "clang"
-
-[target.riscv64gc-unknown-linux-musl]
-linker = "clang"
-
-[target.x86_64-pc-windows-msvc]
-linker = "lld-link"
-
-[target.aarch64-pc-windows-msvc]
-linker = "lld-link"
-
-[target.x86_64-apple-darwin]
-linker = "clang"
-
-[target.aarch64-apple-darwin]
-linker = "clang"
-
 [dependencies]
 discord-rich-presence = "1.1.0"
 steel-core = "0.8"
