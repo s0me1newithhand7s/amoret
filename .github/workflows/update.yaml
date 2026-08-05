@@ -79,7 +79,7 @@ jobs:
           cache: true
 
       - name: update actions 
-        run: deno dx actions-up --write
+        run: deno run --allow-read --allow-net jsr:@hayd/udd .github/workflows/*.yml
       
       - name: pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
