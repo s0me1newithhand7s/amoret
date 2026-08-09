@@ -1,3 +1,4 @@
+---
 name: cachix push job
 
 on:
@@ -36,3 +37,4 @@ jobs:
           nix --extra-experimental-features "nix-command flakes" \
             build .#default --no-pure-eval \
             --accept-flake-config
+...

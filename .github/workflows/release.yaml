@@ -127,4 +127,4 @@ jobs:
           files: release-assets/*.tar.zstd
           generate_release_notes: true
           tag_name: "v${{ steps.cargo_version.outputs.value }}"
----
+...

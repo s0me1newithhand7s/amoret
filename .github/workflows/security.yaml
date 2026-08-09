@@ -1,3 +1,4 @@
+---
 name: security job
 
 on:
@@ -43,7 +44,7 @@ jobs:
             extra-experimental-features = nix-command flakes
 
       - name: magic nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@87b14d436d0b3b446210f92b74057865c6978df4
+        uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98
 
       - name: cargo-audit run
         shell: bash
@@ -70,7 +71,7 @@ jobs:
             extra-experimental-features = nix-command flakes
       
       - name: magic nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@87b14d436d0b3b446210f92b74057865c6978df4
+        uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98
 
       - name: cargo-deny run
         shell: bash
@@ -97,7 +98,7 @@ jobs:
             extra-experimental-features = nix-command flakes
       
       - name: magic nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@87b14d436d0b3b446210f92b74057865c6978df4
+        uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98
 
       - name: cargo-vet run
         shell: bash
@@ -124,7 +125,7 @@ jobs:
             extra-experimental-features = nix-command flakes
       
       - name: magic nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@87b14d436d0b3b446210f92b74057865c6978df4
+        uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98
 
       - name: clippy run
         shell: bash
@@ -151,7 +152,7 @@ jobs:
             extra-experimental-features = nix-command flakes
       
       - name: magic nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@87b14d436d0b3b446210f92b74057865c6978df4
+        uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98
 
       - name: cargo-fuzz run
         shell: bash
@@ -163,3 +164,4 @@ jobs:
             --accept-flake-config \
             --override-input devenv-root "file+file://$({pwd})/.devenv/root" \
             --command cargo fuzz run amoret -- -max_total_time=120
+...
