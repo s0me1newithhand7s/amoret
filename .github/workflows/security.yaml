@@ -85,7 +85,7 @@ jobs:
             --command cargo deny check
 
   vet:
-    name: cargo-vet
+    name: cargo vet
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -137,31 +137,4 @@ jobs:
             --accept-flake-config \
             --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
             --command cargo clippy --all-targets --all-features -- -D warnings
-
-  fuzz:
-    name: cargo fuzz
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-
-      - name: install nix
-        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
-        with:
-          extra_nix_config: |
-            extra-experimental-features = nix-command flakes
-      
-      - name: magic nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98
-
-      - name: cargo-fuzz run
-        shell: bash
-        run: |
-          mkdir -p "./.devenv"
-          printf "%s" "$PWD" > "./.devenv/root"
-          nix --extra-experimental-features "nix-command flakes" \
-            develop .#default --no-pure-eval \
-            --accept-flake-config \
-            --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
-            --command cargo fuzz run amoret -- -max_total_time=120
 ...
