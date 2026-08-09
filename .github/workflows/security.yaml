@@ -1,0 +1,165 @@
+name: security job
+
+on:
+  workflow_dispatch:
+  
+  push:
+    paths:
+      - '**.rs'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - '**.nix'
+      - 'flake.lock'
+  
+  pull_request:
+    branches: [ "*" ]
+  
+  schedule:
+    - cron: '0 0 * * 1'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  BIN_NAME: amoret
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: install nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
+        with:
+          extra_nix_config: |
+            extra-experimental-features = nix-command flakes
+
+      - name: magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@87b14d436d0b3b446210f92b74057865c6978df4
+
+      - name: cargo-audit run
+        shell: bash
+        run: |
+          mkdir -p "./.devenv"
+          printf "%s" "$PWD" > "./.devenv/root"
+          nix --extra-experimental-features "nix-command flakes" \
+            develop .#default --no-pure-eval \
+            --accept-flake-config \
+            --override-input devenv-root "file+file://$({pwd})/.devenv/root" \
+            --command cargo audit
+
+  deny:
+    name: cargo deny
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: install nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
+        with:
+          extra_nix_config: |
+            extra-experimental-features = nix-command flakes
+      
+      - name: magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@87b14d436d0b3b446210f92b74057865c6978df4
+
+      - name: cargo-deny run
+        shell: bash
+        run: |
+          mkdir -p "./.devenv"
+          printf "%s" "$PWD" > "./.devenv/root"
+          nix --extra-experimental-features "nix-command flakes" \
+            develop .#default --no-pure-eval \
+            --accept-flake-config \
+            --override-input devenv-root "file+file://$({pwd})/.devenv/root" \
+            --command cargo deny check
+
+  vet:
+    name: cargo-vet
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: install nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
+        with:
+          extra_nix_config: |
+            extra-experimental-features = nix-command flakes
+      
+      - name: magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@87b14d436d0b3b446210f92b74057865c6978df4
+
+      - name: cargo-vet run
+        shell: bash
+        run: |
+          mkdir -p "./.devenv"
+          printf "%s" "$PWD" > "./.devenv/root"
+          nix --extra-experimental-features "nix-command flakes" \
+            develop .#default --no-pure-eval \
+            --accept-flake-config \
+            --override-input devenv-root "file+file://$({pwd})/.devenv/root" \
+            --command cargo vet check
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: install nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
+        with:
+          extra_nix_config: |
+            extra-experimental-features = nix-command flakes
+      
+      - name: magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@87b14d436d0b3b446210f92b74057865c6978df4
+
+      - name: clippy run
+        shell: bash
+        run: |
+          mkdir -p "./.devenv"
+          printf "%s" "$PWD" > "./.devenv/root"
+          nix --extra-experimental-features "nix-command flakes" \
+            develop .#default --no-pure-eval \
+            --accept-flake-config \
+            --override-input devenv-root "file+file://$({pwd})/.devenv/root" \
+            --command cargo clippy --all-targets --all-features -- -D warnings
+
+  fuzz:
+    name: cargo fuzz
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: install nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
+        with:
+          extra_nix_config: |
+            extra-experimental-features = nix-command flakes
+      
+      - name: magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@87b14d436d0b3b446210f92b74057865c6978df4
+
+      - name: cargo-fuzz run
+        shell: bash
+        run: |
+          mkdir -p "./.devenv"
+          printf "%s" "$PWD" > "./.devenv/root"
+          nix --extra-experimental-features "nix-command flakes" \
+            develop .#default --no-pure-eval \
+            --accept-flake-config \
+            --override-input devenv-root "file+file://$({pwd})/.devenv/root" \
+            --command cargo fuzz run amoret -- -max_total_time=120
