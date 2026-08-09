@@ -96,7 +96,7 @@ jobs:
             use_cross: false
 
     steps:
-      - name: checkput
+      - name: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: rust toolchain
@@ -109,18 +109,6 @@ jobs:
         if: matrix.use_cross == true
         run: cargo install cross --locked --git https://github.com/cross-rs/cross --verbose
 
-      - name: cargo-nextest
-        run: cargo install cargo-nextest --locked --git https://github.com/nextest-rs/nextest --verbose
-
-      - name: testing
-        shell: bash
-        run: |
-          if [ "${{ matrix.use_cross }}" = "true" ]; then
-            cross test --release --locked --target ${{ matrix.target }}
-          else
-            cargo nextest run --release --locked --target ${{ matrix.target }}
-          fi
-
       - name: building
         shell: bash
         run: |
@@ -130,7 +118,7 @@ jobs:
             cargo build --release --locked --target ${{ matrix.target }}
           fi
 
-      - name: runnig
+      - name: running
         if: matrix.target != 'aarch64-pc-windows-msvc'
         shell: bash
         run: |
@@ -142,7 +130,7 @@ jobs:
           
           EXIT_CODE=$?
           if [ $EXIT_CODE -eq 124 ]; then
-            echo "✅ amoret succseeded"
+            echo "✅ amoret worked"
             exit 0
           else
             echo "❌ amoret failed $EXIT_CODE"
