@@ -116,9 +116,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.use_cross }}" = "true" ]; then
-            cross test --release --locked --target ${{ matrix.target }} --fail-fast
+            cross test --release --locked --target ${{ matrix.target }}
           else
-            cargo nextest run --release --locked --target ${{ matrix.target }} --fail-fast
+            cargo nextest run --release --locked --target ${{ matrix.target }}
           fi
 
       - name: building
