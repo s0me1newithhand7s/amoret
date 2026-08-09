@@ -1,9 +1,7 @@
-name: CACHIX JOB
+name: cachix push job
 
 on:
   workflow_dispatch:
-
-  push:
 
 jobs:
   push-to-cache:

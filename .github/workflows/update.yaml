@@ -1,5 +1,5 @@
 ---
-name: UPDATE JOB
+name: update & pr job
 
 on:
   workflow_dispatch:
@@ -24,6 +24,8 @@ jobs:
 
       - name: cargo update
         run: cargo update --verbose
+        with:
+          toolchain: stable
 
       - name: pull requrest
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
@@ -41,7 +43,7 @@ jobs:
     name: update-nix
     runs-on: ubuntu-latest
     steps:
-      - name: checkot
+      - name: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: nix install
@@ -66,7 +68,7 @@ jobs:
           base: master 
 
   update-github-actions:
-    name: Update CI/CD Workflows
+    name: deno update
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -78,8 +80,13 @@ jobs:
           deno-version: v2.x
           cache: true
 
-      - name: update actions 
-        run: deno run --allow-read --allow-net jsr:@hayd/udd .github/workflows/*.yaml
+      - name: setup nudd
+        run: |
+          deno install --allow-run --allow-read --allow-write --allow-net --name nudd --force --global https://deno.land/x/nudd/cli.ts
+          echo "$HOME/.deno/bin" >> $GITHUB_PATH
+
+      - name: update action
+        run: nudd .github/workflows/*.yaml
       
       - name: pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1

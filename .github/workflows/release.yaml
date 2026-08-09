@@ -1,5 +1,5 @@
 ---
-name: RELEASE JOB
+name: build & release job
 
 on:
   workflow_dispatch:
@@ -54,7 +54,7 @@ jobs:
             use_cross: false
 
     steps:
-      - name: chechout
+      - name: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: rust toolchain
@@ -65,7 +65,7 @@ jobs:
 
       - name: cross-rs
         if: matrix.use_cross == true
-        run: cargo install cross --git https://github.com/cross-rs/cross
+        run: cargo install cross --locked --git https://github.com/cross-rs/cross
 
       - name: build
         shell: bash

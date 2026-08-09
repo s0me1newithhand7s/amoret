@@ -1,5 +1,5 @@
 ---
-name: PR JOB
+name: pr handle job
 
 on:
   workflow_dispatch:
@@ -94,10 +94,10 @@ jobs:
 
       - name: cross-rs
         if: matrix.use_cross == true
-        run: cargo install cross --git https://github.com/cross-rs/cross --verbose
+        run: cargo install cross --locked --git https://github.com/cross-rs/cross --verbose
 
       - name: cargo-nextest
-        run: cargo install cargo-nextest --git https://github.com/nextest-rs/nextest --verbose
+        run: cargo install cargo-nextest --locked --git https://github.com/nextest-rs/nextest --verbose
 
       - name: testing
         shell: bash
