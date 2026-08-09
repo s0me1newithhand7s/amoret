@@ -150,18 +150,31 @@ jobs:
           fi
   
   all-tests-passed:
-    name: "Required - No Failed Checks"
+    name: req - no jobs failed
     needs: [ lint, matrix-test-build-run ]
     runs-on: ubuntu-latest
     if: always()
+    permissions:
+      statuses: write
     steps:
-      - name: Check matrix status
-        run: |
-          if [ "${{ needs.matrix-test-build-run.result }}"="success" ]; then
-            echo "All matrix tests passed successfully."
-            exit 0
-          else
-            echo "One or more matrix tests failed."
-            exit 1
-          fi
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        with:
+          script: |
+            const { serverUrl, repo, runId, payload } = context
+            const target_url = `${serverUrl}/${repo.owner}/${repo.repo}/actions/runs/${runId}`
+            
+            const resultsObj = JSON.parse(process.env.RESULTS);
+            const allPassed = Object.values(resultsObj).every(status => status === 'success');
+            const state = allPassed ? 'success' : 'error';
+
+            await github.rest.repos.createCommitStatus({
+              ...repo,
+              sha: context.sha,
+              context: 'req - no jobs failed',
+              state: state,
+              target_url: target_url,
+              description: allPassed ? 'All checks passed!' : 'One or more jobs failed.'
+            })
 ...
