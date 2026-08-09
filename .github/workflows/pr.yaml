@@ -34,6 +34,19 @@ jobs:
           extra_nix_config: |
             extra-experimental-features = nix-command flakes
 
+      - name: cargo update
+        shell: bash
+        run: |
+          mkdir -p "./.devenv"
+          
+          printf "%s" "$PWD" > "./.devenv/root"
+
+          nix --extra-experimental-features "nix-command flakes" \
+            develop .#default --no-pure-eval \
+            --accept-flake-config \
+            --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
+            --command cargo fetch --locked
+
       - name: linter run
         shell: bash
         run: |
