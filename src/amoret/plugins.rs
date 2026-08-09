@@ -1,9 +1,6 @@
 /* imports */
 
-use steel::steel_vm::{
-    engine::Engine,
-    register_fn::RegisterFn,
-};
+use steel::steel_vm::{engine::Engine, register_fn::RegisterFn};
 
 use clap::Parser;
 
@@ -15,16 +12,23 @@ use crate::amoret::config::DiscordConfig;
 
 /* structs */
 
+#[allow(dead_code)]
 pub struct Plugins;
 
 #[derive(Parser, Debug)]
 pub struct PluginArgs {
-    #[arg(short, long, value_name = "SCRIPT", help = "Path to steel script to be plugged.")]
+    #[arg(
+        short,
+        long,
+        value_name = "SCRIPT",
+        help = "Path to steel script to be plugged."
+    )]
     pub plugins: Option<PathBuf>,
 }
 
 /* fns */
 
+#[allow(dead_code)]
 impl Plugins {
     pub fn run(script_path: PathBuf, tx: watch::Sender<Option<DiscordConfig>>, base_cfg: DiscordConfig) {
         std::thread::spawn(move || {
