@@ -311,6 +311,7 @@
                   cargo-deny
                   cargo-vet
                   cargo-fuzz
+                  cargo-edit
                 ]
                 ++ [
                   config.treefmt.build.wrapper

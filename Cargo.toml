@@ -2,6 +2,11 @@
 name = "amoret"
 version = "0.1.1"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/s0me1newithhand7s/amoret"
+description = "Simple Discord RPC daemon written on rust."
+default-run = "amoret"
+authors = ["s0me1newithhand7s me+git@hand7s.org"]
 
 [profile.release]
 opt-level = 3
@@ -12,10 +17,10 @@ strip = true
 
 [dependencies]
 discord-rich-presence = "1.1.0"
-steel-core = "0.8"
-directories = "5"
-toml = "0.8"
-clap-verbosity-flag = "2.1"
+steel-core = "0.8.2"
+directories = "6"
+toml = "1.1"
+clap-verbosity-flag = "3.0"
 simplelog = "0.12"
 log = "0.4"
 
