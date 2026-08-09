@@ -54,7 +54,7 @@ jobs:
           nix --extra-experimental-features "nix-command flakes" \
             develop .#default --no-pure-eval \
             --accept-flake-config \
-            --override-input devenv-root "file+file://$({pwd})/.devenv/root" \
+            --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
             --command cargo audit
 
   deny:
@@ -81,7 +81,7 @@ jobs:
           nix --extra-experimental-features "nix-command flakes" \
             develop .#default --no-pure-eval \
             --accept-flake-config \
-            --override-input devenv-root "file+file://$({pwd})/.devenv/root" \
+            --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
             --command cargo deny check
 
   vet:
@@ -108,7 +108,7 @@ jobs:
           nix --extra-experimental-features "nix-command flakes" \
             develop .#default --no-pure-eval \
             --accept-flake-config \
-            --override-input devenv-root "file+file://$({pwd})/.devenv/root" \
+            --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
             --command cargo vet check
 
   clippy:
@@ -135,7 +135,7 @@ jobs:
           nix --extra-experimental-features "nix-command flakes" \
             develop .#default --no-pure-eval \
             --accept-flake-config \
-            --override-input devenv-root "file+file://$({pwd})/.devenv/root" \
+            --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
             --command cargo clippy --all-targets --all-features -- -D warnings
 
   fuzz:
@@ -162,6 +162,6 @@ jobs:
           nix --extra-experimental-features "nix-command flakes" \
             develop .#default --no-pure-eval \
             --accept-flake-config \
-            --override-input devenv-root "file+file://$({pwd})/.devenv/root" \
+            --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
             --command cargo fuzz run amoret -- -max_total_time=120
 ...
