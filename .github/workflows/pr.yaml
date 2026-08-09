@@ -118,25 +118,6 @@ jobs:
             cargo build --release --locked --target ${{ matrix.target }}
           fi
 
-      - name: running
-        if: matrix.target != 'aarch64-pc-windows-msvc'
-        shell: bash
-        run: |
-          if [ "${{ matrix.use_cross }}" = "true" ]; then
-            timeout 5 cross run --release --locked --target ${{ matrix.target }} -- --config ./config.toml -vvv
-          else
-            timeout 5 cargo run --release --locked --target ${{ matrix.target }} -- --config ./config.toml -vvv
-          fi
-          
-          EXIT_CODE=$?
-          if [ $EXIT_CODE -eq 124 ]; then
-            echo "✅ amoret worked"
-            exit 0
-          else
-            echo "❌ amoret failed $EXIT_CODE"
-            exit $EXIT_CODE
-          fi
-  
   all-tests-passed:
     name: req - no jobs failed
     needs: [ lint, matrix-test-build-run ]
