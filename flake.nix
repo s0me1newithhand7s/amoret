@@ -166,6 +166,26 @@
               cargo check ;
             '';
           };
+
+          "securityRun" = {
+            name = "securityRun";
+
+            runtimeInputs = with pkgs; [
+              cargo-audit
+              cargo-deny
+              cargo-vet
+              cargo-fuzz
+              clippy
+            ];
+
+            text = ''
+              cargo audit;
+              cargo deny check;
+              cargo vet check;
+              cargo clippy --all-tagrets --all-features -- -D warnings;
+              cargo fuzz run amoret -- -max_total_time=1800;
+            '';
+          };
         };
 
         # numtide/treefmt-nix, treefmt integrated into nix
@@ -284,9 +304,15 @@
                 ];
               };
 
-              packages =
+              packages = with pkgs;
                 [
-                  pkgs.cachix
+                  cachix
+                  cargo-audit
+                  cargo-deny
+                  cargo-vet
+                  cargo-fuzz
+                ]
+                ++ [
                   config.treefmt.build.wrapper
                 ]
                 ++ config.pre-commit.settings.enabledPackages;
