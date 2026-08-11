@@ -61,10 +61,12 @@ jobs:
 
       - name: zig install
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29        
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: build
         shell: bash
-        run: argo zigbuild --release --target ${{ matrix.target }}
+        run: cargo zigbuild --release --target ${{ matrix.target }}
 
       - name: artifact prep
         shell: bash
