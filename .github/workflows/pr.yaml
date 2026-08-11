@@ -101,7 +101,7 @@ jobs:
       - name: cargo-zigbuild
         run: cargo install cargo-zigbuild --locked --git https://github.com/rust-cross/cargo-zigbuild
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GHA_TOKEN }}
 
       - name: zig install
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29        
