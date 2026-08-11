@@ -60,9 +60,8 @@ jobs:
             --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
             --command prek run --fail-fast --all-files
 
-jobs:
-  build:
-    name: build (${{ matrix.target }})
+  matrix-test-build-run:
+    name: fail-slow (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
