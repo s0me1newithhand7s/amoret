@@ -50,23 +50,33 @@ jobs:
       - name: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
-      - name: rust toolchain
-        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: install nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
         with:
-          targets: ${{ matrix.target }}
-          toolchain: stable
+          extra_nix_config: |
+            extra-experimental-features = nix-command flakes
 
-      - name: cargo-zigbuild
-        run: cargo install cargo-zigbuild --locked --git https://github.com/rust-cross/cargo-zigbuild
+      - name: magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98
 
-      - name: zig install
-        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29        
-        env:
-          GITHUB_TOKEN: ${{ secrets.GHA_TOKEN }}
-
-      - name: build
+      - name: build-nt
+        if: matrix.is_nt == true
         shell: bash
-        run: cargo zigbuild --release --target ${{ matrix.target }}
+        run: |
+          nix --extra-experimental-features "nix-command flakes" \
+            develop --no-pure-eval --accept-flake-config \
+            --command cargo xwin build --release --target ${{ matrix.target }}
+
+      - name: build-unix
+        if: matrix.is_nt == false
+        shell: bash
+        run: |
+          nix --extra-experimental-features "nix-command flakes" \
+            develop --no-pure-eval --accept-flake-config \
+            --command cargo zigbuild --release --target ${{ matrix.target }}
 
       - name: artifact prep
         shell: bash
