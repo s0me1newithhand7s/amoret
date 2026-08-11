@@ -60,8 +60,9 @@ jobs:
             --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
             --command prek run --fail-fast --all-files
 
-  matrix-test-build-run:
-    name: fail-slow (${{ matrix.target }})
+jobs:
+  build:
+    name: build (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -69,31 +70,24 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            use_cross: true
           
           - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
-            use_cross: true
           
           - os: ubuntu-latest
             target: riscv64gc-unknown-linux-musl
-            use_cross: true
           
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            use_cross: false
-
+          
           - os: windows-latest
             target: aarch64-pc-windows-msvc
-            use_cross: false
           
           - os: macos-15-intel
             target: x86_64-apple-darwin
-            use_cross: false
-
-          - os: macos-latest
+          
+          - os: macos-latest 
             target: aarch64-apple-darwin
-            use_cross: false
 
     steps:
       - name: checkout
@@ -105,18 +99,15 @@ jobs:
           targets: ${{ matrix.target }}
           toolchain: stable
 
-      - name: cross-rs
-        if: matrix.use_cross == true
-        run: cargo install cross --locked --git https://github.com/cross-rs/cross --verbose
+      - name: cargo-zigbuild
+        run: cargo install cargo-zigbuild --locked --git https://github.com/rust-cross/cargo-zigbuild
 
-      - name: building
+      - name: zig install
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29        
+
+      - name: build
         shell: bash
-        run: |
-          if [ "${{ matrix.use_cross }}" = "true" ]; then
-            cross build --release --locked --target ${{ matrix.target }}
-          else
-            cargo build --release --locked --target ${{ matrix.target }}
-          fi
+        run: argo zigbuild --release --target ${{ matrix.target }}
 
   all-tests-passed:
     name: req - no jobs failed
