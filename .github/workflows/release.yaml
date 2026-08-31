@@ -69,7 +69,7 @@ jobs:
 
       - name: setup zig
         if: matrix.is_windows == false
-        uses: https://codeberg.org/mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
         with:
           version: "latest"
 
