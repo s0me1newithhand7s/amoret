@@ -37,11 +37,11 @@ jobs:
             target: riscv64gc-unknown-linux-musl
             is_windows: false
           
-          - os: ubuntu-latest
+          - os: windows-latest
             target: x86_64-pc-windows-msvc
             is_windows: true
           
-          - os: ubuntu-latest
+          - os: windows-latest
             target: aarch64-pc-windows-msvc
             is_windows: true
           
@@ -63,10 +63,6 @@ jobs:
           toolchain: stable
           targets: ${{ matrix.target }}
 
-      - name: setup xwin tools
-        if: matrix.is_windows == true
-        run: cargo install cargo-xwin --locked --git https://github.com/rust-cross/cargo-xwin
-
       - name: setup zig
         if: matrix.is_windows == false
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
@@ -78,9 +74,9 @@ jobs:
         run: |
           cargo install cargo-zigbuild --locked --git https://github.com/rust-cross/cargo-zigbuild
 
-      - name: build-xwin
+      - name: build 
         if: matrix.is_windows == true
-        run: cargo xwin build --release --target ${{ matrix.target }}
+        run: cargo build --release --target ${{ matrix.target }}
 
       - name: build-zigbuild
         if: matrix.is_windows == false
