@@ -69,7 +69,7 @@ jobs:
 
       - name: setup uv
         if: matrix.is_windows == false
-        uses: astral-sh/setup-uv@885aaeaa3d24268393c83321528cb6192f153094
+        uses: astral-sh/setup-uv@d08d816a1ea176d61a318eff45abd3dffef415b1
 
       - name: setup zig
         if: matrix.is_windows == false
