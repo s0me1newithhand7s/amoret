@@ -315,6 +315,8 @@
                   cargo-edit
                   cargo-zigbuild
                   cargo-xwin
+                  steel
+                  steel-language-server
                 ]
                 ++ [
                   config.treefmt.build.wrapper
