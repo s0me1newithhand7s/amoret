@@ -307,11 +307,14 @@
               packages = with pkgs;
                 [
                   cachix
+                  zig
                   cargo-audit
                   cargo-deny
                   cargo-vet
                   cargo-fuzz
                   cargo-edit
+                  cargo-zigbuild
+                  cargo-xwin
                 ]
                 ++ [
                   config.treefmt.build.wrapper

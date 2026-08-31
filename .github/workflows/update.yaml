@@ -51,6 +51,9 @@ jobs:
         with:
           extra_nix_config: |
             extra-experimental-features = nix-command flakes
+            
+      - name: magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98
 
       - name: nix flake update
         run: nix flake update --accept-flake-config

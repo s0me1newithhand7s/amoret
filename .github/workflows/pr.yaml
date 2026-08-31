@@ -34,6 +34,9 @@ jobs:
           extra_nix_config: |
             extra-experimental-features = nix-command flakes
 
+      - name: magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98
+
       - name: cargo update
         shell: bash
         run: |
@@ -69,54 +72,60 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            use_cross: true
+            is_nt: false
           
           - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
-            use_cross: true
+            is_nt: false
           
           - os: ubuntu-latest
             target: riscv64gc-unknown-linux-musl
-            use_cross: true
+            is_nt: false
           
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            use_cross: false
-
+            is_nt: true
+          
           - os: windows-latest
             target: aarch64-pc-windows-msvc
-            use_cross: false
+            is_nt: true
           
           - os: macos-15-intel
             target: x86_64-apple-darwin
-            use_cross: false
-
-          - os: macos-latest
+            is_nt: false
+          
+          - os: macos-latest 
             target: aarch64-apple-darwin
-            use_cross: false
+            is_nt: false
 
     steps:
       - name: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
-      - name: rust toolchain
-        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
+      - name: install nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
         with:
-          targets: ${{ matrix.target }}
-          toolchain: stable
+          extra_nix_config: |
+            extra-experimental-features = nix-command flakes
 
-      - name: cross-rs
-        if: matrix.use_cross == true
-        run: cargo install cross --locked --git https://github.com/cross-rs/cross --verbose
+      - name: magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98
 
-      - name: building
+      - name: build-nt
+        if: matrix.is_nt == true
         shell: bash
         run: |
-          if [ "${{ matrix.use_cross }}" = "true" ]; then
-            cross build --release --locked --target ${{ matrix.target }}
-          else
-            cargo build --release --locked --target ${{ matrix.target }}
-          fi
+          nix --extra-experimental-features "nix-command flakes" \
+            develop --no-pure-eval --accept-flake-config \
+            --command cargo xwin build --release --target ${{ matrix.target }}
+
+      - name: build-unix
+        if: matrix.is_nt == false
+        shell: bash
+        run: |
+          nix --extra-experimental-features "nix-command flakes" \
+            develop --no-pure-eval --accept-flake-config \
+            --command cargo zigbuild --release --target ${{ matrix.target }}
 
   all-tests-passed:
     name: req - no jobs failed
