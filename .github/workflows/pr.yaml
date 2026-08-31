@@ -63,8 +63,8 @@ jobs:
             --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
             --command prek run --fail-fast --all-files
 
-  matrix-test-build-run:
-    name: fail-slow (${{ matrix.target }})
+  build:
+    name: build (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -72,60 +72,65 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            is_nt: false
+            is_windows: false
           
           - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
-            is_nt: false
+            is_windows: false
           
           - os: ubuntu-latest
             target: riscv64gc-unknown-linux-musl
-            is_nt: false
+            is_windows: false
           
-          - os: windows-latest
+          - os: ubuntu-latest
             target: x86_64-pc-windows-msvc
-            is_nt: true
-          
-          - os: windows-latest
+          - os: ubuntu-latest
             target: aarch64-pc-windows-msvc
-            is_nt: true
+            is_windows: true
           
           - os: macos-15-intel
             target: x86_64-apple-darwin
-            is_nt: false
+            is_windows: false
           
           - os: macos-latest 
             target: aarch64-apple-darwin
-            is_nt: false
+            is_windows: false
 
     steps:
       - name: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
-      - name: install nix
-        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342
+      - name: install rust toolchain
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
         with:
-          extra_nix_config: |
-            extra-experimental-features = nix-command flakes
+          toolchain: stable
+          targets: ${{ matrix.target }}
 
-      - name: magic nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98
+      - name: setup xwin tools
+        if: matrix.is_windows == true
+        run: cargo install cargo-xwin --locked --git https://github.com/rust-cross/cargo-xwin
 
-      - name: build-nt
-        if: matrix.is_nt == true
-        shell: bash
+      - name: setup uv
+        if: matrix.is_windows == false
+        uses: astral-sh/setup-uv@885aaeaa3d24268393c83321528cb6192f153094
+
+      - name: setup zig
+        if: matrix.is_windows == false
         run: |
-          nix --extra-experimental-features "nix-command flakes" \
-            develop --no-pure-eval --accept-flake-config \
-            --command cargo xwin build --release --target ${{ matrix.target }}
+          uv tool install ziglang --from git+https://codeberg.org/ziglang/zig-pypi.git@64227d66b55fc3fb59d6f4a5369e9c7af778c4bb
 
-      - name: build-unix
-        if: matrix.is_nt == false
-        shell: bash
+      - name: setup zigbuild tools
+        if: matrix.is_windows == false
         run: |
-          nix --extra-experimental-features "nix-command flakes" \
-            develop --no-pure-eval --accept-flake-config \
-            --command cargo zigbuild --release --target ${{ matrix.target }}
+          cargo install cargo-zigbuild --locked --git https://github.com/rust-cross/cargo-zigbuild
+
+      - name: build-xwin
+        if: matrix.is_windows == true
+        run: cargo xwin build --release --target ${{ matrix.target }}
+
+      - name: build-zigbuild
+        if: matrix.is_windows == false
+        run: cargo zigbuild --release --target ${{ matrix.target }}
 
   all-tests-passed:
     name: req - no jobs failed
