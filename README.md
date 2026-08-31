@@ -6,27 +6,23 @@
 <h1></h1>
 
 basic usecase looks like:
+
 ```Sh
-~: $ amoret --confg /path/to/config.toml --daemonize
+~: $ amoret --confg /path/to/config.<toml|scm> --daemonize
 # example config in repo's root
+~: $ amoret --reload # used to stop previous session and start new
 ```
 
-beside serialised with `serde` toml config `amoret` also could be expanded with `steel` (LISP dialect) with `--plugins` flag: 
-basic usecase looks like:
+you can check config via `--validate` flag:
 ```Sh
-~: $ amoret --plugins /path/to/plugins.scm
-# my plugin example isn't worky, idk how lisp gonna work bc im nix person
+~: $ amoret --validate --config /path/to/config.<toml|scm>
+# --validate will fail if used with --daemonize or --reload
 ```
 
 <h1></h1>
 
 <h3>installing</h3>
 
-at this moment `amoret` distributed as nix-only package. plans for ci/cd with binaries exist.
-you could always:
-```Sh
-git clone https://github.com/s0me1newithhand7s/amoret.git
-cd amoret/
-cargo build .
-```
-and then use as is!
+under release you have **singed** binaries build via **GHA**.
+choose your platform, install tarball, inpack it and use!
+
