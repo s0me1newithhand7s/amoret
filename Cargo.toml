@@ -1,6 +1,6 @@
 [package]
 name = "amoret"
-version = "0.1.1"
+version = "1.0.0"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/s0me1newithhand7s/amoret"
@@ -23,6 +23,7 @@ toml = "1.1"
 clap-verbosity-flag = "3.0"
 simplelog = "0.12"
 log = "0.4"
+sysinfo = "0.39.6"
 
 tokio = {
   version = "1",

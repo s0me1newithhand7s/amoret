@@ -27,60 +27,66 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            use_cross: true
+            is_windows: false
           
           - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
-            use_cross: true
+            is_windows: false
           
           - os: ubuntu-latest
             target: riscv64gc-unknown-linux-musl
-            use_cross: true
+            is_windows: false
           
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            use_cross: false
+            is_windows: true
           
           - os: windows-latest
             target: aarch64-pc-windows-msvc
-            use_cross: false
+            is_windows: true
           
           - os: macos-15-intel
             target: x86_64-apple-darwin
-            use_cross: false
+            is_windows: false
           
           - os: macos-latest 
             target: aarch64-apple-darwin
-            use_cross: false
+            is_windows: false
 
     steps:
       - name: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
-      - name: rust toolchain
+      - name: install rust toolchain
         uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
         with:
-          targets: ${{ matrix.target }}
           toolchain: stable
+          targets: ${{ matrix.target }}
 
-      - name: cross-rs
-        if: matrix.use_cross == true
-        run: cargo install cross --locked --git https://github.com/cross-rs/cross
+      - name: setup zig
+        if: matrix.is_windows == false
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
+        with:
+          version: "latest"
 
-      - name: build
-        shell: bash
+      - name: setup zigbuild tools
+        if: matrix.is_windows == false
         run: |
-          if [ "${{ matrix.use_cross }}" = "true" ]; then
-            cross build --release --target ${{ matrix.target }}
-          else
-            cargo build --release --target ${{ matrix.target }}
-          fi
+          cargo install cargo-zigbuild --locked --git https://github.com/rust-cross/cargo-zigbuild
+
+      - name: build 
+        if: matrix.is_windows == true
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: build-zigbuild
+        if: matrix.is_windows == false
+        run: cargo zigbuild --release --target ${{ matrix.target }}
 
       - name: artifact prep
         shell: bash
         run: |
           mkdir -p staging
-          if [ "${{ runner.os }}" = "Windows" ]; then
+          if [ "${{ matrix.is_windows }}" = "true" ]; then
             cp target/${{ matrix.target }}/release/${{ env.BIN_NAME }}.exe staging/
           else
             cp target/${{ matrix.target }}/release/${{ env.BIN_NAME }} staging/
@@ -104,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: chechout
+      - name: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: fetch artifact
@@ -113,7 +119,7 @@ jobs:
           path: release-assets
           merge-multiple: true
 
-      - name: car go version
+      - name: cargo version
         id: cargo_version
         uses: cssnr/toml-action@fde2b2f22f30923c248d1bddc1e431437d6e314f
         with:

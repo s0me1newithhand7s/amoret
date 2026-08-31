@@ -143,7 +143,7 @@
         packages = {
           "default" = pkgs.rustPlatform.buildRustPackage {
             pname = "amoret";
-            version = "0.1.1";
+            version = "1.0.0";
             src = ./.;
             cargoLock = {
               lockFile = ./Cargo.lock;
@@ -307,11 +307,16 @@
               packages = with pkgs;
                 [
                   cachix
+                  zig
                   cargo-audit
                   cargo-deny
                   cargo-vet
                   cargo-fuzz
                   cargo-edit
+                  cargo-zigbuild
+                  cargo-xwin
+                  steel
+                  steel-language-server
                 ]
                 ++ [
                   config.treefmt.build.wrapper

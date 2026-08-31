@@ -4,7 +4,6 @@ use clap::Parser;
 use clap_verbosity_flag::Verbosity;
 
 use crate::amoret::config::ConfigArgs;
-use crate::amoret::plugins::PluginArgs;
 
 /* structs */
 
@@ -15,11 +14,23 @@ pub struct Cli {
     pub config: ConfigArgs,
 
     #[command(flatten)]
-    pub plugins: PluginArgs,
-
-    #[command(flatten)]
     pub verbose: Verbosity,
 
     #[arg(short, long, help = "Run as a background daemon.")]
     pub daemon: bool,
+
+    #[arg(
+        long,
+        help = "Validate configuration file and exit.",
+        conflicts_with_all = &["daemon", "reload"]
+    )]
+    pub validate: bool,
+
+    #[arg(
+        short = 'R',
+        long,
+        help = "Kill the running daemon instance and start a new one.",
+        conflicts_with_all = &["daemon", "validate"]
+    )]
+    pub reload: bool,
 }
