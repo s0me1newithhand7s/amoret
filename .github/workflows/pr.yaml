@@ -48,7 +48,7 @@ jobs:
             develop .#default --no-pure-eval \
             --accept-flake-config \
             --override-input devenv-root "file+file://$(pwd)/.devenv/root" \
-            --command cargo fetch --locked
+            --command cargo fetch
 
       - name: linter run
         shell: bash
