@@ -134,7 +134,7 @@ jobs:
 
   all-tests-passed:
     name: req - no jobs failed
-    needs: [ lint, matrix-test-build-run ]
+    needs: [ lint, build ]
     runs-on: ubuntu-latest
     if: always()
     permissions:
