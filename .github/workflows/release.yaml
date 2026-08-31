@@ -67,14 +67,11 @@ jobs:
         if: matrix.is_windows == true
         run: cargo install cargo-xwin --locked --git https://github.com/rust-cross/cargo-xwin
 
-      - name: setup uv
-        if: matrix.is_windows == false
-        uses: astral-sh/setup-uv@d08d816a1ea176d61a318eff45abd3dffef415b1
-
       - name: setup zig
         if: matrix.is_windows == false
-        run: |
-          uv tool install ziglang --from git+https://codeberg.org/ziglang/zig-pypi.git@64227d66b55fc3fb59d6f4a5369e9c7af778c4bb
+        uses: https://codeberg.org/mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
+        with:
+          version: "latest"
 
       - name: setup zigbuild tools
         if: matrix.is_windows == false
