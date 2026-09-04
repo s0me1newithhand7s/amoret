@@ -7,8 +7,6 @@ use tokio::{
 
 use std::path::PathBuf;
 
-use clap::Parser;
-
 use discord_rich_presence::{
     DiscordIpc, DiscordIpcClient,
     activity::{
@@ -16,7 +14,6 @@ use discord_rich_presence::{
     },
 };
 
-use crate::amoret::cli::Cli;
 use crate::amoret::config::{self, DiscordConfig};
 
 /* fns */
@@ -36,9 +33,8 @@ async fn watch_loop(path: PathBuf, tx: watch::Sender<Option<DiscordConfig>>) {
     }
 }
 
-pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
-    let args = Cli::parse();
-    let path = config::resolve_path(args.config.config);
+pub async fn run(config: Option<PathBuf>) -> Result<(), Box<dyn std::error::Error>> {
+    let path = config::resolve_path(config);
 
     let (tx, mut rx) = watch::channel(None);
     tokio::spawn(watch_loop(path, tx));

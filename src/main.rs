@@ -6,6 +6,7 @@ mod amoret;
 
 use clap::Parser;
 use log::error;
+use std::io::IsTerminal;
 use sysinfo::{Pid, System};
 
 /* fns */
@@ -21,6 +22,8 @@ async fn main() {
         eprintln!("amoret canot log: {e}");
         std::process::exit(1);
     }
+
+    let interactive = std::io::stdin().is_terminal();
 
     let pid_path = directories::ProjectDirs::from("com", "amoret", "amoret")
         .map(|p| p.config_dir().join("amoret.pid"));
@@ -41,7 +44,7 @@ async fn main() {
         }
     }
 
-    if args.reload {
+    if args.reload && interactive {
         println!("amoret is reloading daemon...");
 
         if let Some(ref path) = pid_path {
@@ -49,11 +52,18 @@ async fn main() {
                 if let Ok(pid_str) = std::fs::read_to_string(path) {
                     if let Ok(target_pid) = pid_str.trim().parse::<usize>() {
                         let mut sys = System::new();
-                        sys.refresh_all(); // Ensures correct process metadata across OS types
+                        sys.refresh_all();
 
                         if let Some(process) = sys.process(Pid::from(target_pid)) {
-                            if !process.kill() {
-                                error!("amoret canot stop old instance with PID {target_pid}");
+                            let name = process.name().to_string_lossy();
+                            if name.contains("amoret") {
+                                if !process.kill() {
+                                    error!("amoret canot stop old instance with PID {target_pid}");
+                                }
+                            } else {
+                                log::warn!(
+                                    "amoret refuses to kill PID {target_pid}: it is `{name}`, not amoret"
+                                );
                             }
                         } else {
                             log::warn!("amoret found no active old instance with PID {target_pid}");
@@ -71,27 +81,50 @@ async fn main() {
             }
         }
 
-        let child_args: Vec<String> = std::env::args()
-            .skip(1)
-            .filter(|a| a != "--reload" && a != "-R")
-            .collect();
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        println!("amoret successfully reloaded.");
+    }
 
-        let exe = match std::env::current_exe() {
-            Ok(p) => p,
-            Err(e) => {
-                error!("amoret not found: {e}");
-                std::process::exit(1);
-            }
-        };
-
-        if let Err(e) = std::process::Command::new(exe).args(&child_args).spawn() {
-            error!("amoret canot spawn new daemon: {e}");
+    if (args.daemon || args.reload) && interactive {
+        if let Err(e) = daemonize(&pid_path) {
+            error!("amoret canot daemonize: {e}");
             std::process::exit(1);
         }
-
-        println!("amoret successfully reloaded.");
-        std::process::exit(0);
     }
+
+    if let Err(e) = amoret::run(args.config.config).await {
+        error!("amoret died: {e}");
+        remove_pid_file_if_mine(&pid_path);
+        std::process::exit(1);
+    }
+
+    remove_pid_file_if_mine(&pid_path);
+}
+
+fn daemonize(pid_path: &Option<std::path::PathBuf>) -> Result<(), std::io::Error> {
+    let exe = std::env::current_exe()?;
+
+    let mut cmd = std::process::Command::new(exe);
+    cmd.args(std::env::args_os().skip(1))
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null());
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::CommandExt;
+        cmd.process_group(0);
+    }
+
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const DETACHED_PROCESS: u32 = 0x0000_0008;
+        const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
+        cmd.creation_flags(DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP);
+    }
+
+    let child = cmd.spawn()?;
 
     if let Some(ref path) = pid_path {
         if let Some(parent) = path.parent() {
@@ -99,20 +132,21 @@ async fn main() {
                 error!("amoret cannot create runtime directory: {e}");
             }
         }
-        if let Err(e) = std::fs::write(path, std::process::id().to_string()) {
+        if let Err(e) = std::fs::write(path, child.id().to_string()) {
             error!("amoret cannot save PID file: {e}");
         }
     }
 
-    if let Err(e) = amoret::run().await {
-        error!("amoret died: {e}");
-        if let Some(ref path) = pid_path {
-            let _ = std::fs::remove_file(path);
-        }
-        std::process::exit(1);
-    }
+    eprintln!("amoret is daemonized");
+    std::process::exit(0);
+}
 
+fn remove_pid_file_if_mine(pid_path: &Option<std::path::PathBuf>) {
     if let Some(ref path) = pid_path {
-        let _ = std::fs::remove_file(path);
+        if let Ok(mine) = std::fs::read_to_string(path) {
+            if mine.trim() == std::process::id().to_string() {
+                let _ = std::fs::remove_file(path);
+            }
+        }
     }
 }
