@@ -14,6 +14,7 @@ basic usecase looks like:
 ```
 
 you can check config via `--validate` flag:
+
 ```Sh
 ~: $ amoret --validate --config /path/to/config.<toml|scm>
 # --validate will fail if used with --daemonize or --reload
@@ -25,4 +26,3 @@ you can check config via `--validate` flag:
 
 under release you have **singed** binaries build via **GHA**.
 choose your platform, install tarball, inpack it and use!
-
